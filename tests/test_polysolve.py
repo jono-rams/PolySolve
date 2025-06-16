@@ -37,7 +37,7 @@ def test_differential(quadratic_func):
     derivative = quadratic_func.differential()
     assert derivative.largest_exponent == 1
     # The derivative of 2x^2 - 3x - 5 is 4x - 3
-    assert np.array_equal(derivative.constants, [4, -3])
+    assert np.array_equal(derivative.coefficients, [4, -3])
 
 def test_quadratic_solve(quadratic_func):
     """Tests the analytical quadratic solver for exact roots."""
@@ -52,21 +52,21 @@ def test_addition(quadratic_func, linear_func):
     # (2x^2 - 3x - 5) + (x + 10) = 2x^2 - 2x + 5
     result = quadratic_func + linear_func
     assert result.largest_exponent == 2
-    assert np.array_equal(result.constants, [2, -2, 5])
+    assert np.array_equal(result.coefficients, [2, -2, 5])
 
 def test_subtraction(quadratic_func, linear_func):
     """Tests the subtraction of two Function objects."""
     # (2x^2 - 3x - 5) - (x + 10) = 2x^2 - 4x - 15
     result = quadratic_func - linear_func
     assert result.largest_exponent == 2
-    assert np.array_equal(result.constants, [2, -4, -15])
+    assert np.array_equal(result.coefficients, [2, -4, -15])
 
 def test_multiplication(linear_func):
     """Tests the multiplication of a Function object by a scalar."""
     # (x + 10) * 3 = 3x + 30
     result = linear_func * 3
     assert result.largest_exponent == 1
-    assert np.array_equal(result.constants, [3, 30])
+    assert np.array_equal(result.coefficients, [3, 30])
 
 # --- Genetic Algorithm Root-Finding Tests ---
 
