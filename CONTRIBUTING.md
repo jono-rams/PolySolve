@@ -48,9 +48,6 @@ If you have an idea for a new feature or an improvement, please open an issue to
     ```bash
     # For a development setup with CUDA 12.x
     pip install -e '.[dev,cuda12]'
-
-    # For a development setup with CUDA 11.x
-    pip install -e '.[dev,cuda11]'
     ```
 
 ## Running Tests
@@ -64,6 +61,30 @@ pytest
 This will automatically discover and run all tests located in the `tests/` directory.
 
 All tests should pass before you submit your changes. If you are adding a new feature or fixing a bug, please add a corresponding test case to ensure the code is working correctly and to prevent future regressions.
+
+## CI & Automated Testing Environment
+
+To ensure that all contributions are consistent and stable, our test suite is executed automatically via Gitea Actions. Your pull request must pass all these checks before it can be merged.
+
+Our CI environment is the ultimate source of truth. It is built using a custom Docker image to lock down dependencies and guarantee reproducibility.
+
+### Reference Environment Specification
+
+* **Base OS:** Ubuntu 24.04
+* **CUDA Toolkit:** 12.5.1
+* **Base Docker Image:** `nvidia/cuda:12.5.1-devel-ubuntu24.04`
+* **Node.js Version:** 20.x
+* **Python Versions Tested:** 3.8, 3.10, 3.12
+
+### Reproducing the Environment
+
+You can replicate our CI environment exactly by using the public Docker image we built for our runners. You can pull it from Docker Hub:
+
+```bash
+docker pull c1ph3rd3v/gitea-runner-cuda-node:12.5.1-ubuntu24.04
+```
+
+Using this Docker image for your local development will ensure your code runs in the same environment as our automated tests, minimizing "it works on my machine" issues.
 
 ## Pull Request Process
 

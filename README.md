@@ -34,11 +34,6 @@ To enable GPU acceleration, install the extra that matches your installed NVIDIA
 pip install polysolve[cuda12]
 ```
 
-**For CUDA 11.x users:**
-```bash
-pip install polysolve[cuda11]
-```
-
 ---
 
 ## Quick Start
@@ -85,6 +80,12 @@ print(f"Approximate roots from GA: {roots_ga[:2]}")
 ```
 
 ---
+
+## Development & Testing Environment
+
+This project is automatically tested against a specific set of dependencies to ensure stability. Our Continuous Integration (CI) pipeline runs on an environment using **CUDA 12.5** on **Ubuntu 24.04**.
+
+While the code may work on other configurations, all contributions must pass the automated tests in our reference environment. For detailed information on how to replicate the testing environment, please see our [**Contributing Guide**](CONTRIBUTING.md).
 
 ## Contributing
 
