@@ -14,14 +14,14 @@ from polysolve import Function, GA_Options, quadratic_solve
 def quadratic_func() -> Function:
     """Provides a standard quadratic function: 2x^2 - 3x - 5."""
     f = Function(largest_exponent=2)
-    f.set_constants([2, -3, -5])
+    f.set_coeffs([2, -3, -5])
     return f
 
 @pytest.fixture
 def linear_func() -> Function:
     """Provides a standard linear function: x + 10."""
     f = Function(largest_exponent=1)
-    f.set_constants([1, 10])
+    f.set_coeffs([1, 10])
     return f
 
 # --- Core Functionality Tests ---
