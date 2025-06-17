@@ -1,6 +1,6 @@
 # Contributing to polysolve
 
-First off, thank you for considering contributing! We welcome any contributions, from fixing a typo to implementing a new feature.
+First off, thank you for considering contributing! We welcome any contributions, from fixing a typo to implementing a new feature. You can see a list of everyone who has contributed in our [Contributors Hall of Fame](/.github/CONTRIBUTORS.md).
 
 ## Table of Contents
 

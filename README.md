@@ -89,6 +89,12 @@ While the code may work on other configurations, all contributions must pass the
 
 ## Contributing
 
+[![All Contributors](https://img.shields.io/github/all-contributors/jono-rams/PolySolve?color=ee8449&style=flat-square)](./.github/CONTRIBUTORS.md)  
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![GitHub contributors](https://img.shields.io/github/contributors/jono-rams/PolySolve.svg?style=flat-square)](https://github.com/jono-rams/PolySolve/graphs/contributors)
+[![GitHub issues](https://img.shields.io/github/issues/jono-rams/PolySolve.svg?style=flat-square)](https://github.com/jono-rams/PolySolve/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/jono-rams/PolySolve.svg?style=flat-square)](https://github.com/jono-rams/PolySolve/pulls)
+
 Contributions are welcome! Whether it's a bug report, a feature request, or a pull request, please feel free to get involved.
 
 Please read our `CONTRIBUTING.md` file for details on our code of conduct and the process for submitting pull requests.
