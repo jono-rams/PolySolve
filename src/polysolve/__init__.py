@@ -488,6 +488,10 @@ if __name__ == '__main__':
     df1 = f1.derivative()
     print(f"Derivative of f1: {df1}")
 
+    # Find the second derivative: 4
+    ddf1 = f1.nth_derivative(2)
+    print(f"Second derivative of f1: {ddf1}")
+
     # --- Root Finding ---
     # 1. Analytical solution for quadratic
     roots_analytic = quadratic_solve(f1)
