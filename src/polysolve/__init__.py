@@ -130,7 +130,7 @@ class Function:
             Function: A new Function object representing the derivative.
         """
         warnings.warn(
-            "The 'differential' function has been renamed. Please use 'derivitive' instead.",
+            "The 'differential' function has been renamed. Please use 'derivative' instead.",
             DeprecationWarning,
             stacklevel=2
         )
@@ -142,7 +142,7 @@ class Function:
         return self.derivitive()
         
     
-    def derivitive(self) -> 'Function':
+    def derivative(self) -> 'Function':
         """
         Calculates the derivative of the function.
 
@@ -159,6 +159,36 @@ class Function:
         diff_func.set_coeffs(derivative_coefficients.tolist())
         return diff_func
     
+
+    def nth_derivative(self, n: int) -> 'Function':
+        """
+        Calculates the nth derivative of the function.
+
+        Args:
+            n (int): The order of the derivative to calculate.
+
+        Returns:
+           Function: A new Function object representing the nth derivative.
+        """
+        self._check_initialized()
+        
+        if not isinstance(n, int) or n < 1:
+            raise ValueError("Derivative order 'n' must be a positive integer.")
+
+        if n > self.largest_exponent:
+            function = Function(0)
+            function.set_coeffs([0])
+            return function
+
+        if n == 1:
+            return self.derivative()
+        
+        function = self
+        for _ in range(n):
+            function = function.derivative()
+
+        return function
+
 
     def get_real_roots(self, options: GA_Options = GA_Options(), use_cuda: bool = False) -> np.ndarray:
         """
@@ -429,7 +459,7 @@ if __name__ == '__main__':
     print(f"Value of f1 at x=5 is: {y}") # Expected: 2*(25) - 3*(5) - 5 = 50 - 15 - 5 = 30
 
     # Find the derivative: 4x - 3
-    df1 = f1.differential()
+    df1 = f1.derivative()
     print(f"Derivative of f1: {df1}")
 
     # --- Root Finding ---

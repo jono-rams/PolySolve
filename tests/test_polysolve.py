@@ -32,12 +32,19 @@ def test_solve_y(quadratic_func):
     assert quadratic_func.solve_y(0) == -5.0
     assert quadratic_func.solve_y(-1) == 0.0
 
-def test_differential(quadratic_func):
+def test_derivative(quadratic_func):
     """Tests the calculation of the function's derivative."""
-    derivative = quadratic_func.differential()
+    derivative = quadratic_func.derivative()
     assert derivative.largest_exponent == 1
     # The derivative of 2x^2 - 3x - 5 is 4x - 3
     assert np.array_equal(derivative.coefficients, [4, -3])
+
+def test_nth_derivative(quadratic_func):
+    """Tests the calculation of the function's 2nd derivative."""
+    derivative = quadratic_func.nth_derivative(2)
+    assert derivative.largest_exponent == 0
+    # The derivative of 2x^2 - 3x - 5 is 4x - 3
+    assert np.array_equal(derivative.coefficients, [4])
 
 def test_quadratic_solve(quadratic_func):
     """Tests the analytical quadratic solver for exact roots."""
