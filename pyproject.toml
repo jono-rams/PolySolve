@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # --- Core Metadata ---
 name = "polysolve"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
   { name="Jonathan Rampersad", email="jonathan@jono-rams.work" },
 ]
@@ -42,5 +42,6 @@ cuda12 = ["cupy-cuda12x"]
 dev = ["pytest"]
 
 [project.urls]
-Homepage = "https://gitea.jono-rams.work/jono/PolySolve"
-"Bug Tracker" = "https://gitea.jono-rams.work/jono/PolySolve/issues"
+Homepage = "https://github.com/jono-rams/PolySolve"
+"Source Code" = "https://github.com/jono-rams/PolySolve"
+"Bug Tracker" = "https://github.com/jono-rams/PolySolve/issues"
