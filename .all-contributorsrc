@@ -2,7 +2,7 @@
   "projectName": "PolySolve",
   "projectOwner": "jono-rams",
   "files": [
-    "README.md"
+    "CONTRIBUTORS.md"
   ],
   "commitType": "docs",
   "commitConvention": "angular",
