@@ -92,7 +92,7 @@ def test_function_multiplication(m_func_1, m_func_2):
     # (2x^2 + 3x + 1) * (5x -4) = 10x^3 + 7x^2 - 7x -4
     result = m_func_1 * m_func_2
     assert result.largest_exponent == 3
-    assert np.array_equal(result.coefficients, [19, 7, -7, -4])
+    assert np.array_equal(result.coefficients, [10, 7, -7, -4])
 
 # --- Genetic Algorithm Root-Finding Tests ---
 
