@@ -13,7 +13,7 @@ First off, thank you for considering contributing! We welcome any contributions,
 
 ## Reporting Bugs
 
-If you find a bug, please open an issue on our Gitea issue tracker. Please include as many details as possible, such as your OS, Python version, steps to reproduce, and any error messages.  
+If you find a bug, please open an issue on our GitHub issue tracker. Please include as many details as possible, such as your OS, Python version, steps to reproduce, and any error messages.  
 [Report a Bug](https://github.com/jono-rams/PolySolve/issues/new?assignees=&labels=bug&template=bug_report.md&title=)
 
 ## Suggesting Enhancements
@@ -23,7 +23,7 @@ If you have an idea for a new feature or an improvement, please open an issue to
 
 ## Setting Up the Development Environment
 
-1.  **Fork the repository** on Gitea.
+1.  **Fork the repository** on GitHub.
 
 2.  **Clone your fork** locally:
     ```bash
