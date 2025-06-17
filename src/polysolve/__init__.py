@@ -394,7 +394,9 @@ class Function:
         if not isinstance(scalar, (int, float)):
             return NotImplemented
         if scalar == 0:
-            raise ValueError("Cannot multiply a function by 0.")
+            result_func = Function(0)
+            result_func.set_coeffs([0])
+            return result_func
 
         new_coefficients = self.coefficients * scalar
         
