@@ -24,6 +24,18 @@ def linear_func() -> Function:
     f.set_coeffs([1, 10])
     return f
 
+@pytest.fixture
+def m_func_1() -> Function:
+    f = Function(2)
+    f.set_coeffs([2, 3, 1])
+    return f
+
+@pytest.fixture
+def m_func_2() -> Function:
+    f = Function(1)
+    f.set_coeffs([5, -4])
+    return f
+
 # --- Core Functionality Tests ---
 
 def test_solve_y(quadratic_func):
@@ -68,12 +80,19 @@ def test_subtraction(quadratic_func, linear_func):
     assert result.largest_exponent == 2
     assert np.array_equal(result.coefficients, [2, -4, -15])
 
-def test_multiplication(linear_func):
+def test_scalar_multiplication(linear_func):
     """Tests the multiplication of a Function object by a scalar."""
     # (x + 10) * 3 = 3x + 30
     result = linear_func * 3
     assert result.largest_exponent == 1
     assert np.array_equal(result.coefficients, [3, 30])
+
+def test_function_multiplication(m_func_1, m_func_2):
+    """Tests the multiplication of two Function objects."""
+    # (2x^2 + 3x + 1) * (5x -4) = 10x^3 + 7x^2 - 7x -4
+    result = m_func_1 * m_func_2
+    assert result.largest_exponent == 3
+    assert np.array_equal(result.coefficients, [19, 7, -7, -4])
 
 # --- Genetic Algorithm Root-Finding Tests ---
 
