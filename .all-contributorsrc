@@ -13,16 +13,6 @@
   "linkToUsage": true,
   "skipCi": true,
   "contributors": [
-    {
-      "login": "jono-rams",
-      "name": "Jonathan Rampersad",
-      "avatar_url": "https://avatars.githubusercontent.com/u/29872001?v=4",
-      "profile": "https://jono-rams.work",
-      "contributions": [
-        "code",
-        "doc",
-        "infra"
-      ]
-    }
+    
   ]
 }
