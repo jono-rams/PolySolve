@@ -56,7 +56,7 @@ print(f"Value of f1 at x=5 is: {y_val}")
 # > Value of f1 at x=5 is: 30.0
 
 # 3. Get the derivative: 4x - 3
-df1 = f1.differential()
+df1 = f1.derivative()
 print(f"Derivative of f1: {df1}")
 # > Derivative of f1: 4x - 3
 
