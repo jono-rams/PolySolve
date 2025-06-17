@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Union
 import warnings
 
 # Attempt to import CuPy for CUDA acceleration.
@@ -108,6 +108,11 @@ class Function:
     def largest_exponent(self) -> int:
         """Returns the largest exponent of the function."""
         return self._largest_exponent
+    
+    @property
+    def degree(self) -> int:
+        """Returns the largest exponent of the function."""
+        return self._largest_exponent
 
     def solve_y(self, x_val: float) -> float:
         """
@@ -129,15 +134,66 @@ class Function:
         Returns:
             Function: A new Function object representing the derivative.
         """
+        warnings.warn(
+            "The 'differential' function has been renamed. Please use 'derivative' instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
         self._check_initialized()
         if self._largest_exponent == 0:
             raise ValueError("Cannot differentiate a constant (Function of degree 0).")
 
+        return self.derivitive()
+        
+    
+    def derivative(self) -> 'Function':
+        """
+        Calculates the derivative of the function.
+
+        Returns:
+            Function: A new Function object representing the derivative.
+        """
+        self._check_initialized()
+        if self._largest_exponent == 0:
+            raise ValueError("Cannot differentiate a constant (Function of degree 0).")
+        
         derivative_coefficients = np.polyder(self.coefficients)
         
         diff_func = Function(self._largest_exponent - 1)
         diff_func.set_coeffs(derivative_coefficients.tolist())
         return diff_func
+    
+
+    def nth_derivative(self, n: int) -> 'Function':
+        """
+        Calculates the nth derivative of the function.
+
+        Args:
+            n (int): The order of the derivative to calculate.
+
+        Returns:
+           Function: A new Function object representing the nth derivative.
+        """
+        self._check_initialized()
+        
+        if not isinstance(n, int) or n < 1:
+            raise ValueError("Derivative order 'n' must be a positive integer.")
+
+        if n > self.largest_exponent:
+            function = Function(0)
+            function.set_coeffs([0])
+            return function
+
+        if n == 1:
+            return self.derivative()
+        
+        function = self
+        for _ in range(n):
+            function = function.derivative()
+
+        return function
+
 
     def get_real_roots(self, options: GA_Options = GA_Options(), use_cuda: bool = False) -> np.ndarray:
         """
@@ -336,34 +392,55 @@ class Function:
         result_func = Function(len(new_coefficients) - 1)
         result_func.set_coeffs(new_coefficients.tolist())
         return result_func
-        
-    def __mul__(self, scalar: int) -> 'Function':
-        """Multiplies the function by a scalar constant."""
-        self._check_initialized()
-        if not isinstance(scalar, (int, float)):
-            return NotImplemented
-        if scalar == 0:
-            raise ValueError("Cannot multiply a function by 0.")
+    
+    def _multiply_by_scalar(self, scalar: Union[int, float]) -> 'Function':
+        """Helper method to multiply the function by a scalar constant."""
+        self._check_initialized() # It's good practice to check here too
 
+        if scalar == 0:
+            result_func = Function(0)
+            result_func.set_coeffs([0])
+            return result_func
+    
         new_coefficients = self.coefficients * scalar
-        
+    
         result_func = Function(self._largest_exponent)
         result_func.set_coeffs(new_coefficients.tolist())
         return result_func
 
-    def __rmul__(self, scalar: int) -> 'Function':
+    def _multiply_by_function(self, other: 'Function') -> 'Function':
+        """Helper method for polynomial multiplication (Function * Function)."""
+        self._check_initialized()
+        other._check_initialized()
+
+        # np.polymul performs convolution of coefficients to multiply polynomials
+        new_coefficients = np.polymul(self.coefficients, other.coefficients)
+    
+        # The degree of the resulting polynomial is derived from the new coefficients
+        new_degree = len(new_coefficients) - 1
+    
+        result_func = Function(new_degree)
+        result_func.set_coeffs(new_coefficients.tolist())
+        return result_func
+        
+    def __mul__(self, other: Union['Function', int, float]) -> 'Function':
+        """Multiplies the function by a scalar constant."""
+        if isinstance(other, (int, float)):
+            return self._multiply_by_scalar(other)
+        elif isinstance(other, self.__class__):
+            return self._multiply_by_function(other)
+        else:
+            return NotImplemented
+
+    def __rmul__(self, scalar: Union[int, float]) -> 'Function':
         """Handles scalar multiplication from the right (e.g., 3 * func)."""
+
         return self.__mul__(scalar)
         
-    def __imul__(self, scalar: int) -> 'Function':
+    def __imul__(self, other: Union['Function', int, float]) -> 'Function':
         """Performs in-place multiplication by a scalar (func *= 3)."""
-        self._check_initialized()
-        if not isinstance(scalar, (int, float)):
-            return NotImplemented
-        if scalar == 0:
-            raise ValueError("Cannot multiply a function by 0.")
-        
-        self.coefficients *= scalar
+
+        self.coefficients *= other
         return self
 
 
@@ -408,8 +485,12 @@ if __name__ == '__main__':
     print(f"Value of f1 at x=5 is: {y}") # Expected: 2*(25) - 3*(5) - 5 = 50 - 15 - 5 = 30
 
     # Find the derivative: 4x - 3
-    df1 = f1.differential()
+    df1 = f1.derivative()
     print(f"Derivative of f1: {df1}")
+
+    # Find the second derivative: 4
+    ddf1 = f1.nth_derivative(2)
+    print(f"Second derivative of f1: {ddf1}")
 
     # --- Root Finding ---
     # 1. Analytical solution for quadratic
@@ -449,3 +530,17 @@ if __name__ == '__main__':
     # Multiplication: (x + 10) * 3 = 3x + 30
     f_mul = f2 * 3
     print(f"f2 * 3 = {f_mul}")
+
+    # f3 represents 2x^2 + 3x + 1
+    f3 = Function(2)
+    f3.set_coeffs([2, 3, 1]) 
+    print(f"Function f3: {f3}")
+
+    # f4 represents 5x - 4
+    f4 = Function(1)
+    f4.set_coeffs([5, -4])
+    print(f"Function f4: {f4}")
+
+    # Multiply the two functions
+    product_func = f3 * f4
+    print(f"f3 * f4 = {product_func}")
