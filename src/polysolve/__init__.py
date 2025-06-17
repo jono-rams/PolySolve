@@ -108,6 +108,11 @@ class Function:
     def largest_exponent(self) -> int:
         """Returns the largest exponent of the function."""
         return self._largest_exponent
+    
+    @property
+    def degree(self) -> int:
+        """Returns the largest exponent of the function."""
+        return self._largest_exponent
 
     def solve_y(self, x_val: float) -> float:
         """
