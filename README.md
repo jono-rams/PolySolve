@@ -61,8 +61,8 @@ print(f"Derivative of f1: {df1}")
 # > Derivative of f1: 4x - 3
 
 # 4. Get the 2nd derivative: 4
-df1 = f1.nth_derivative(2)
-print(f"2nd Derivative of f1: {df1}")
+ddf1 = f1.nth_derivative(2)
+print(f"2nd Derivative of f1: {ddf1}")
 # > Derivative of f1: 4
 
 # 5. Find roots analytically using the quadratic formula
