@@ -60,13 +60,18 @@ df1 = f1.derivative()
 print(f"Derivative of f1: {df1}")
 # > Derivative of f1: 4x - 3
 
-# 4. Find roots analytically using the quadratic formula
+# 4. Get the 2nd derivative: 4
+df1 = f1.nth_derivative(2)
+print(f"2nd Derivative of f1: {df1}")
+# > Derivative of f1: 4
+
+# 5. Find roots analytically using the quadratic formula
 #    This is exact and fast for degree-2 polynomials.
 roots_analytic = quadratic_solve(f1)
 print(f"Analytic roots: {sorted(roots_analytic)}")
 # > Analytic roots: [-1.0, 2.5]
 
-# 5. Find roots with the genetic algorithm (CPU)
+# 6. Find roots with the genetic algorithm (CPU)
 #    This can solve polynomials of any degree.
 ga_opts = GA_Options(num_of_generations=20)
 roots_ga = f1.get_real_roots(ga_opts, use_cuda=False)
