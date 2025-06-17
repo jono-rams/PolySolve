@@ -129,15 +129,36 @@ class Function:
         Returns:
             Function: A new Function object representing the derivative.
         """
+        warnings.warn(
+            "The 'differential' function has been renamed. Please use 'derivitive' instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
         self._check_initialized()
         if self._largest_exponent == 0:
             raise ValueError("Cannot differentiate a constant (Function of degree 0).")
 
+        return self.derivitive()
+        
+    
+    def derivitive(self) -> 'Function':
+        """
+        Calculates the derivative of the function.
+
+        Returns:
+            Function: A new Function object representing the derivative.
+        """
+        self._check_initialized()
+        if self._largest_exponent == 0:
+            raise ValueError("Cannot differentiate a constant (Function of degree 0).")
+        
         derivative_coefficients = np.polyder(self.coefficients)
         
         diff_func = Function(self._largest_exponent - 1)
         diff_func.set_coeffs(derivative_coefficients.tolist())
         return diff_func
+    
 
     def get_real_roots(self, options: GA_Options = GA_Options(), use_cuda: bool = False) -> np.ndarray:
         """
