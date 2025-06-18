@@ -12,8 +12,32 @@ try:
 except ImportError:
     _CUPY_AVAILABLE = False
 
-# The CUDA kernel for the fitness function
-_FITNESS_KERNEL = """
+# The CUDA kernels for the fitness function
+_FITNESS_KERNEL_FLOAT = """
+extern "C" __global__ void fitness_kernel(
+    const double* coefficients, 
+    int num_coefficients, 
+    const double* x_vals, 
+    double* ranks, 
+    int size, 
+    double y_val)
+{
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if (idx < size)
+    {
+        double ans = 0;
+        int lrgst_expo = num_coefficients - 1;
+        for (int i = 0; i < num_coefficients; ++i)
+        {
+            ans += coefficients[i] * pow(x_vals[idx], (double)(lrgst_expo - i));
+        }
+
+        ans -= y_val;
+        ranks[idx] = (ans == 0) ? 1.7976931348623157e+308 : fabs(1.0 / ans);
+    }
+}
+"""
+_FITNESS_KERNEL_INT = """
 extern "C" __global__ void fitness_kernel(
     const long long* coefficients, 
     int num_coefficients, 
@@ -37,6 +61,7 @@ extern "C" __global__ void fitness_kernel(
     }
 }
 """
+
 
 @dataclass
 class GA_Options:
@@ -76,13 +101,14 @@ class Function:
         self.coefficients: Optional[np.ndarray] = None
         self._initialized = False
 
-    def set_coeffs(self, coefficients: List[int]):
+    def set_coeffs(self, coefficients: List[Union[int, float]]):
         """
         Sets the coefficients of the polynomial.
 
         Args:
-            coefficients (List[int]): A list of integer coefficients. The list size
-                                   must be largest_exponent + 1.
+            coefficients (List[Union[int, float]]): A list of integer or float
+                                                   coefficients. The list size
+                                                   must be largest_exponent + 1.
 
         Raises:
             ValueError: If the input is invalid.
@@ -95,8 +121,14 @@ class Function:
             )
         if coefficients[0] == 0 and self._largest_exponent > 0:
             raise ValueError("The first constant (for the largest exponent) cannot be 0.")
+        
+        # Check if any coefficient is a float
+        is_float = any(isinstance(c, float) for c in coefficients)
 
-        self.coefficients = np.array(coefficients, dtype=np.int64)
+        # Choose the dtype based on the input
+        target_dtype = np.float64 if is_float else np.int64
+
+        self.coefficients = np.array(coefficients, dtype=target_dtype)
         self._initialized = True
 
     def _check_initialized(self):
@@ -275,11 +307,16 @@ class Function:
 
     def _solve_x_cuda(self, y_val: float, options: GA_Options) -> np.ndarray:
         """Genetic algorithm implementation using CuPy (GPU/CUDA)."""
-        # Load the raw CUDA kernel
-        fitness_gpu = cupy.RawKernel(_FITNESS_KERNEL, 'fitness_kernel')
         
-        # Move coefficients to GPU
-        d_coefficients = cupy.array(self.coefficients, dtype=cupy.int64)
+        # Check the dtype of our coefficients array
+        if self.coefficients.dtype == np.float64:
+            fitness_gpu = cupy.RawKernel(_FITNESS_KERNEL_FLOAT, 'fitness_kernel')
+            d_coefficients = cupy.array(self.coefficients, dtype=cupy.float64)
+        elif self.coefficients.dtype == np.int64:
+            fitness_gpu = cupy.RawKernel(_FITNESS_KERNEL_INT, 'fitness_kernel')
+            d_coefficients = cupy.array(self.coefficients, dtype=cupy.int64)
+        else:
+            raise TypeError(f"Unsupported dtype for CUDA solver: {self.coefficients.dtype}")
         
         # Create initial random solutions on the GPU
         d_solutions = cupy.random.uniform(
@@ -337,12 +374,16 @@ class Function:
             power = self._largest_exponent - i
             
             # Coefficient part
-            if c == 1 and power != 0:
+            coeff_val = c
+            if c == int(c):
+                coeff_val = int(c)
+
+            if coeff_val == 1 and power != 0:
                 coeff = ""
-            elif c == -1 and power != 0:
+            elif coeff_val == -1 and power != 0:
                 coeff = "-"
             else:
-                coeff = str(c)
+                coeff = str(coeff_val)
 
             # Variable part
             if power == 0:
@@ -356,7 +397,7 @@ class Function:
             sign = ""
             if i > 0:
                 sign = " + " if c > 0 else " - "
-                coeff = str(abs(c))
+                coeff = str(abs(coeff_val))
                 if abs(c) == 1 and power != 0:
                     coeff = "" # Don't show 1 for non-constant terms
 

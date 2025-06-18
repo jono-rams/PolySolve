@@ -9,7 +9,7 @@ A Python library for representing, manipulating, and solving polynomial equation
 
 ## Key Features
 
-* **Create and Manipulate Polynomials**: Easily define polynomials of any degree and perform arithmetic operations like addition, subtraction, multiplication, and scaling.
+* **Create and Manipulate Polynomials**: Easily define polynomials of any degree using integer or float coefficients, and perform arithmetic operations like addition, subtraction, multiplication, and scaling.
 * **Genetic Algorithm Solver**: Find approximate real roots for complex polynomials where analytical solutions are difficult or impossible.
 * **CUDA Accelerated**: Leverage NVIDIA GPUs for a massive performance boost when finding roots in large solution spaces.
 * **Analytical Solvers**: Includes standard, exact solvers for simple cases (e.g., `quadratic_solve`).
@@ -44,6 +44,7 @@ Here is a simple example of how to define a quadratic function, find its propert
 from polysolve import Function, GA_Options, quadratic_solve
 
 # 1. Define the function f(x) = 2x^2 - 3x - 5
+#    Coefficients can be integers or floats.
 f1 = Function(largest_exponent=2)
 f1.set_constants([2, -3, -5])
 
