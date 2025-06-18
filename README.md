@@ -9,7 +9,7 @@ A Python library for representing, manipulating, and solving polynomial equation
 
 ## Key Features
 
-* **Create and Manipulate Polynomials**: Easily define polynomials of any degree and perform arithmetic operations like addition, subtraction, and scaling.
+* **Create and Manipulate Polynomials**: Easily define polynomials of any degree and perform arithmetic operations like addition, subtraction, multiplication, and scaling.
 * **Genetic Algorithm Solver**: Find approximate real roots for complex polynomials where analytical solutions are difficult or impossible.
 * **CUDA Accelerated**: Leverage NVIDIA GPUs for a massive performance boost when finding roots in large solution spaces.
 * **Analytical Solvers**: Includes standard, exact solvers for simple cases (e.g., `quadratic_solve`).
