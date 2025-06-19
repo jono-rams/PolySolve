@@ -1,4 +1,6 @@
-# polysolve
+<p align="center">
+  <img src="https://i.ibb.co/N22Gx6xq/Poly-Solve-Logo.png" alt="polysolve Logo" width="256">
+</p>
 
 [![PyPI version](https://img.shields.io/pypi/v/polysolve.svg)](https://pypi.org/project/polysolve/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/polysolve.svg)](https://pypi.org/project/polysolve/)
