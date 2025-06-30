@@ -113,7 +113,7 @@ Please read our `CONTRIBUTING.md` file for details on our code of conduct and th
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://jono-rams.work"><img src="https://avatars.githubusercontent.com/u/29872001?v=4?s=100" width="100px;" alt="Jonathan Rampersad"/><br /><sub><b>Jonathan Rampersad</b></sub></a><br /><a href="https://github.com/jono-rams/PolySolve/commits?author=jono-rams" title="Code">💻</a> <a href="https://github.com/jono-rams/PolySolve/commits?author=jono-rams" title="Documentation">📖</a> <a href="#infra-jono-rams" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://jono-rams.work"><img src="https://avatars.githubusercontent.com/u/29872001?v=4?s=100" width="100px;" alt="Jonathan Rampersad"/><br /><sub><b>Jonathan Rampersad</b></sub></a><br /><a href="https://github.com/jono-rams/PolySolve/commits?author=jono-rams" title="Maintenance">🚧</a> <a href="https://github.com/jono-rams/PolySolve/commits?author=jono-rams" title="Code">💻</a> <a href="https://github.com/jono-rams/PolySolve/commits?author=jono-rams" title="Documentation">📖</a> <a href="#infra-jono-rams" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     </tr>
   </tbody>
   <tfoot>
