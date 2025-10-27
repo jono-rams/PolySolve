@@ -90,6 +90,23 @@ class GA_Options:
                 "The number of returned solutions will be limited to data_size."
             )
 
+def _get_cauchy_bound(coeffs: np.ndarray) -> float:
+    """
+    Calculates Cauchy's bound for the roots of a polynomial.
+    This provides a radius R such that all roots (real and complex)
+    have an absolute value less than or equal to R.
+    
+    R = 1 + max(|c_n-1/c_n|, |c_n-2/c_n|, ..., |c_0/c_n|)
+    Where c_n is the leading coefficient (coeffs[0]).
+    """
+    # Normalize all coefficients by the leading coefficient
+    normalized_coeffs = np.abs(coeffs[1:] / coeffs[0])
+    
+    # The bound is 1 + the maximum of these normalized values
+    R = 1 + np.max(normalized_coeffs)
+    
+    return R
+
 class Function:
     """
     Represents an exponential function (polynomial) of the form:
@@ -287,8 +304,23 @@ class Function:
         mutation_size = int(data_size * mutation_ratio)
         random_size = data_size - elite_size - crossover_size - mutation_size
 
+        # Check if the user is using the default, non-expert range
+        user_range_is_default = (options.min_range == -100.0 and options.max_range == 100.0)
+
+        if user_range_is_default:
+            # User hasn't specified a custom range.
+            # We are the expert; use the smart, guaranteed bound.
+            bound = _get_cauchy_bound(self.coefficients)
+            min_r = -bound
+            max_r = bound
+        else:
+            # User has provided a custom range.
+            # Trust the expert; use their range.
+            min_r = options.min_range
+            max_r = options.max_range
+
         # Create initial random solutions
-        solutions = np.random.uniform(options.min_range, options.max_range, data_size)
+        solutions = np.random.uniform(min_r, max_r, data_size)
 
         for _ in range(options.num_of_generations):
             # Calculate fitness for all solutions (vectorized)
@@ -332,7 +364,7 @@ class Function:
             mutated_solutions = mutation_candidates * mutation_factors
 
             # 4. New Randoms: Add new blood to prevent getting stuck
-            random_solutions = np.random.uniform(options.min_range, options.max_range, random_size)
+            random_solutions = np.random.uniform(min_r, max_r, random_size)
             
             # Assemble the new generation
             solutions = np.concatenate([
@@ -373,9 +405,24 @@ class Function:
         fitness_gpu = cupy.RawKernel(_FITNESS_KERNEL_FLOAT, 'fitness_kernel')
         d_coefficients = cupy.array(self.coefficients, dtype=cupy.float64)
         
+        # Check if the user is using the default, non-expert range
+        user_range_is_default = (options.min_range == -100.0 and options.max_range == 100.0)
+
+        if user_range_is_default:
+            # User hasn't specified a custom range.
+            # We are the expert; use the smart, guaranteed bound.
+            bound = _get_cauchy_bound(self.coefficients)
+            min_r = -bound
+            max_r = bound
+        else:
+            # User has provided a custom range.
+            # Trust the expert; use their range.
+            min_r = options.min_range
+            max_r = options.max_range
+
         # Create initial random solutions on the GPU
         d_solutions = cupy.random.uniform(
-            options.min_range, options.max_range, options.data_size, dtype=cupy.float64
+            min_r, max_r, options.data_size, dtype=cupy.float64
         )
         d_ranks = cupy.empty(options.data_size, dtype=cupy.float64)
 
@@ -426,7 +473,7 @@ class Function:
 
             # 4. New Randoms
             d_random_solutions = cupy.random.uniform(
-                options.min_range, options.max_range, random_size, dtype=cupy.float64
+                min_r, max_r, random_size, dtype=cupy.float64
             )
 
             # Assemble the new generation
