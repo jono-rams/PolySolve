@@ -49,8 +49,6 @@ class GA_Options:
                            Default: 100.0
         num_of_generations (int): The number of iterations the algorithm will run.
                                   Default: 10
-        sample_size (int): The number of top solutions to *return* at the end.
-                           Default: 1000
         data_size (int): The total number of solutions (population size)
                          generated in each generation. Default: 100000
         mutation_strength (float): The percentage (e.g., 0.01 for 1%) by which
@@ -64,16 +62,21 @@ class GA_Options:
         mutation_ratio (float): The percentage (e.g., 0.40 for 40%) of the next
                                 generation to be created by mutating solutions
                                 from the parent pool. Default: 0.40
+        root_precision (int): The number of decimal places to round roots to
+                              when clustering. A smaller number (e.g., 3)
+                              groups roots more aggressively. A larger number
+                              (e.g., 7) is more precise but may return
+                              multiple near-identical roots. Default: 5
     """
     min_range: float = -100.0
     max_range: float = 100.0
     num_of_generations: int = 10
-    sample_size: int = 1000
     data_size: int = 100000
     mutation_strength: float = 0.01
     elite_ratio: float = 0.05
     crossover_ratio: float = 0.45
     mutation_ratio: float = 0.40
+    root_precision: int = 5
 
     def __post_init__(self):
         """Validates the GA options after initialization."""
@@ -84,11 +87,6 @@ class GA_Options:
             )
         if any(r < 0 for r in [self.elite_ratio, self.crossover_ratio, self.mutation_ratio]):
             raise ValueError("GA ratios cannot be negative.")
-        if self.data_size < self.sample_size:
-            warnings.warn(
-                f"data_size ({self.data_size}) is less than sample_size ({self.sample_size}). "
-                "The number of returned solutions will be limited to data_size."
-            )
 
 def _get_cauchy_bound(coeffs: np.ndarray) -> float:
     """
@@ -380,12 +378,26 @@ class Function:
         error = y_calculated - y_val
         with np.errstate(divide='ignore'):
             ranks = np.where(error == 0, np.finfo(float).max, np.abs(1.0 / error))
-        sorted_indices = np.argsort(-ranks)
         
-        # Get the top 'sample_size' solutions the user asked for
-        best_solutions = solutions[sorted_indices][:options.sample_size]
+        # 1. Define quality based on the user's desired precision
+        #    (e.g., precision=5 -> rank > 1e6, precision=8 -> rank > 1e9)
+        #    We add +1 for a buffer, ensuring we only get high-quality roots.
+        quality_threshold = 10**(options.root_precision + 1)
+
+        # 2. Get all solutions that meet this quality threshold
+        high_quality_solutions = solutions[ranks > quality_threshold]
+
+        if high_quality_solutions.size == 0:
+            # No roots found that meet the quality, return empty
+            return np.array([])
         
-        return np.sort(best_solutions)
+        # 3. Cluster these high-quality solutions by rounding
+        rounded_solutions = np.round(high_quality_solutions, options.root_precision)
+
+        # 4. Return only the unique roots
+        unique_roots = np.unique(rounded_solutions)
+        
+        return np.sort(unique_roots)
 
     def _solve_x_cuda(self, y_val: float, options: GA_Options) -> np.ndarray:
         """Genetic algorithm implementation using CuPy (GPU/CUDA)."""
@@ -490,13 +502,26 @@ class Function:
             (blocks_per_grid,), (threads_per_block,),
             (d_coefficients, d_coefficients.size, d_solutions, d_ranks, d_solutions.size, y_val)
         )
-        sorted_indices = cupy.argsort(-d_ranks)
         
-        # Get the top 'sample_size' solutions
-        d_best_solutions = d_solutions[sorted_indices][:options.sample_size]
+        # 1. Define quality based on the user's desired precision
+        #    (e.g., precision=5 -> rank > 1e6, precision=8 -> rank > 1e9)
+        #    We add +1 for a buffer, ensuring we only get high-quality roots.
+        quality_threshold = 10**(options.root_precision + 1)
+        
+        # 2. Get all solutions that meet this quality threshold
+        d_high_quality_solutions = d_solutions[d_ranks > quality_threshold]
 
-        # Get the final sample, sort it, and copy back to CPU
-        final_solutions_gpu = cupy.sort(d_best_solutions)
+        if d_high_quality_solutions.size == 0:
+            return np.array([])
+            
+        # 3. Cluster these high-quality solutions on the GPU by rounding
+        d_rounded_solutions = cupy.round(d_high_quality_solutions, options.root_precision)
+        
+        # 4. Get only the unique roots
+        d_unique_roots = cupy.unique(d_rounded_solutions)
+
+        # Sort the unique roots and copy back to CPU
+        final_solutions_gpu = cupy.sort(d_unique_roots)
         return final_solutions_gpu.get()
 
 
@@ -692,7 +717,7 @@ if __name__ == '__main__':
     print(f"Analytic roots of f1: {roots_analytic}") # Expected: -1, 2.5
 
     # 2. Genetic algorithm solution
-    ga_opts = GA_Options(num_of_generations=20, data_size=50000, sample_size=10)
+    ga_opts = GA_Options(num_of_generations=20, data_size=50000)
     print("\nFinding roots with Genetic Algorithm (CPU)...")
     roots_ga_cpu = f1.get_real_roots(ga_opts)
     print(f"Approximate roots from GA (CPU): {roots_ga_cpu}")

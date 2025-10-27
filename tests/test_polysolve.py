@@ -101,7 +101,7 @@ def test_get_real_roots_numpy(quadratic_func):
     Tests that the NumPy-based genetic algorithm approximates the roots correctly.
     """
     # Using more generations for higher accuracy in testing
-    ga_opts = GA_Options(num_of_generations=25, data_size=50000)
+    ga_opts = GA_Options(num_of_generations=50, data_size=200000, root_precision=3)
     
     roots = quadratic_func.get_real_roots(ga_opts, use_cuda=False)
     
@@ -124,7 +124,7 @@ def test_get_real_roots_cuda(quadratic_func):
     It will be skipped automatically if CuPy is not available.
     """
     
-    ga_opts = GA_Options(num_of_generations=25, data_size=50000)
+    ga_opts = GA_Options(num_of_generations=50, data_size=200000, root_precision=3)
     
     roots = quadratic_func.get_real_roots(ga_opts, use_cuda=True)
     
