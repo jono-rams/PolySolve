@@ -295,7 +295,8 @@ class Function:
             y_calculated = np.polyval(self.coefficients, solutions)
             error = y_calculated - y_val
             
-            ranks = np.where(error == 0, np.finfo(float).max, np.abs(1.0 / error))
+            with np.errstate(divide='ignore'):
+                ranks = np.where(error == 0, np.finfo(float).max, np.abs(1.0 / error))
             
             # Sort solutions by fitness (descending)
             sorted_indices = np.argsort(-ranks)
@@ -345,7 +346,8 @@ class Function:
         # After all generations, do one last ranking to find the best solutions
         y_calculated = np.polyval(self.coefficients, solutions)
         error = y_calculated - y_val
-        ranks = np.where(error == 0, np.finfo(float).max, np.abs(1.0 / error))
+        with np.errstate(divide='ignore'):
+            ranks = np.where(error == 0, np.finfo(float).max, np.abs(1.0 / error))
         sorted_indices = np.argsort(-ranks)
         
         # Get the top 'sample_size' solutions the user asked for
