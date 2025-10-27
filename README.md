@@ -43,12 +43,12 @@ pip install polysolve[cuda12]
 Here is a simple example of how to define a quadratic function, find its properties, and solve for its roots.
 
 ```python
-from polysolve import Function, GA_Options, quadratic_solve
+from polysolve import Function, GA_Options
 
 # 1. Define the function f(x) = 2x^2 - 3x - 5
 #    Coefficients can be integers or floats.
 f1 = Function(largest_exponent=2)
-f1.set_constants([2, -3, -5])
+f1.set_coeffs([2, -3, -5])
 
 print(f"Function f1: {f1}")
 # > Function f1: 2x^2 - 3x - 5
@@ -70,7 +70,7 @@ print(f"2nd Derivative of f1: {ddf1}")
 
 # 5. Find roots analytically using the quadratic formula
 #    This is exact and fast for degree-2 polynomials.
-roots_analytic = quadratic_solve(f1)
+roots_analytic = f1.quadratic_solve()
 print(f"Analytic roots: {sorted(roots_analytic)}")
 # > Analytic roots: [-1.0, 2.5]
 
@@ -86,6 +86,32 @@ print(f"Approximate roots from GA: {roots_ga[:2]}")
 # print(f"Approximate roots from GA (GPU): {roots_ga_gpu[:2]}")
 
 ```
+
+---
+
+## Tuning the Genetic Algorithm
+
+The `GA_Options` class gives you fine-grained control over the genetic algorithm's performance, letting you trade speed for accuracy.
+
+The default options are balanced, but for very complex polynomials, you may want a more exhaustive search.
+
+```python
+from polysolve import GA_Options
+
+# Create a config for a much deeper, more accurate search
+# (slower, but better for high-degree, complex functions)
+ga_accurate = GA_Options(
+    num_of_generations=50,  # Run for more generations
+    data_size=500000,       # Use a larger population
+    elite_ratio=0.1,        # Keep the top 10%
+    mutation_ratio=0.5      # Mutate 50%
+)
+
+# Pass the custom options to the solver
+roots = f1.get_real_roots(ga_accurate)
+```
+
+For a full breakdown of all parameters, including crossover_ratio, mutation_strength, and more, please see [the full GA_Options API Documentation](https://polysolve.jono-rams.work/docs/ga-options-api).
 
 ---
 

@@ -8,7 +8,7 @@ try:
 except ImportError:
     _CUPY_AVAILABLE = False
 
-from polysolve import Function, GA_Options, quadratic_solve
+from polysolve import Function, GA_Options
 
 @pytest.fixture
 def quadratic_func() -> Function:
@@ -60,7 +60,7 @@ def test_nth_derivative(quadratic_func):
 
 def test_quadratic_solve(quadratic_func):
     """Tests the analytical quadratic solver for exact roots."""
-    roots = quadratic_solve(quadratic_func)
+    roots = quadratic_func.quadratic_solve()
     # Sorting ensures consistent order for comparison
     assert sorted(roots) == [-1.0, 2.5]
 
