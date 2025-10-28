@@ -713,7 +713,7 @@ if __name__ == '__main__':
 
     # --- Root Finding ---
     # 1. Analytical solution for quadratic
-    roots_analytic = quadratic_solve(f1)
+    roots_analytic = f1.quadratic_solve()
     print(f"Analytic roots of f1: {roots_analytic}") # Expected: -1, 2.5
 
     # 2. Genetic algorithm solution
