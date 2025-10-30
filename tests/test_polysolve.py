@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import numpy.testing as npt
 
 # Try to import cupy to check for CUDA availability
 try:
@@ -101,7 +102,7 @@ def test_get_real_roots_numpy(quadratic_func):
     Tests that the NumPy-based genetic algorithm approximates the roots correctly.
     """
     # Using more generations for higher accuracy in testing
-    ga_opts = GA_Options(num_of_generations=50, data_size=200000, root_precision=3)
+    ga_opts = GA_Options(num_of_generations=50, data_size=200000, selection_percentile=0.66, root_precision=3)
     
     roots = quadratic_func.get_real_roots(ga_opts, use_cuda=False)
     
@@ -109,11 +110,7 @@ def test_get_real_roots_numpy(quadratic_func):
     # We don't know which order they'll be in, so we check for presence.
     expected_roots = np.array([-1.0, 2.5])
     
-    # Check that at least one found root is close to -1.0
-    assert np.any(np.isclose(roots, expected_roots[0], atol=1e-2))
-    
-    # Check that at least one found root is close to 2.5
-    assert np.any(np.isclose(roots, expected_roots[1], atol=1e-2))
+    npt.assert_allclose(np.sort(roots), np.sort(expected_roots), atol=1e-2)
 
 
 @pytest.mark.skipif(not _CUPY_AVAILABLE, reason="CuPy is not installed, skipping CUDA test.")
@@ -124,13 +121,12 @@ def test_get_real_roots_cuda(quadratic_func):
     It will be skipped automatically if CuPy is not available.
     """
     
-    ga_opts = GA_Options(num_of_generations=50, data_size=200000, root_precision=3)
+    ga_opts = GA_Options(num_of_generations=50, data_size=200000, selection_percentile=0.66, root_precision=3)
     
     roots = quadratic_func.get_real_roots(ga_opts, use_cuda=True)
     
     expected_roots = np.array([-1.0, 2.5])
     
     # Verify that the CUDA implementation also finds the correct roots within tolerance.
-    assert np.any(np.isclose(roots, expected_roots[0], atol=1e-2))
-    assert np.any(np.isclose(roots, expected_roots[1], atol=1e-2))
+    npt.assert_allclose(np.sort(roots), np.sort(expected_roots), atol=1e-2)
 

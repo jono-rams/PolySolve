@@ -5,13 +5,14 @@
 [![PyPI version](https://img.shields.io/pypi/v/polysolve.svg)](https://pypi.org/project/polysolve/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/polysolve.svg)](https://pypi.org/project/polysolve/)
 
-A Python library for representing, manipulating, and solving polynomial equations using a high-performance genetic algorithm, with optional CUDA/GPU acceleration.
+A Python library for representing, manipulating, and solving polynomial equations. Features a high-performance, Numba-accelerated genetic algorithm for CPU, with an optional CUDA/GPU backend for massive-scale parallel solving.
 
 ---
 
 ## Key Features
 
 * **Numerically Stable Solver**: Makes complex calculations **practical**. Leverage your GPU to power the robust genetic algorithm, solving high-degree polynomials accurately in a reasonable timeframe.
+* **Numba Accelerated CPU Solver**: The default genetic algorithm is JIT-compiled with Numba for high-speed CPU performance, right out of the box.
 * **CUDA Accelerated**: Leverage NVIDIA GPUs for a massive performance boost when finding roots in large solution spaces.
 * **Create and Manipulate Polynomials**: Easily define polynomials of any degree using integer or float coefficients, and perform arithmetic operations like addition, subtraction, multiplication, and scaling.
 * **Analytical Solvers**: Includes standard, exact solvers for simple cases (e.g., `quadratic_solve`).
@@ -74,8 +75,8 @@ roots_analytic = f1.quadratic_solve()
 print(f"Analytic roots: {sorted(roots_analytic)}")
 # > Analytic roots: [-1.0, 2.5]
 
-# 6. Find roots with the genetic algorithm (CPU)
-#    This can solve polynomials of any degree.
+# 6. Find roots with the genetic algorithm (Numba CPU)
+#    This is the default, JIT-compiled CPU solver.
 ga_opts = GA_Options(num_of_generations=20)
 roots_ga = f1.get_real_roots(ga_opts, use_cuda=False)
 print(f"Approximate roots from GA: {roots_ga[:2]}")
@@ -98,13 +99,22 @@ The default options are balanced, but for very complex polynomials, you may want
 ```python
 from polysolve import GA_Options
 
-# Create a config for a much deeper, more accurate search
-# (slower, but better for high-degree, complex functions)
-ga_accurate = GA_Options(
+# Create a config for a deep search, optimized for finding
+# *all* real roots (even if they are far apart).
+ga_robust_search = GA_Options(
     num_of_generations=50,  # Run for more generations
     data_size=500000,       # Use a larger population
-    elite_ratio=0.1,        # Keep the top 10%
-    mutation_ratio=0.5      # Mutate 50%
+
+    # --- Key Tuning Parameters for Multi-Root Finding ---
+
+    # Widen the parent pool to 75% to keep more "niches"
+    # (solution-clouds around different roots) alive.
+    selection_percentile=0.75, 
+
+    # Increase the crossover blend factor to 0.75.
+    # This allows new solutions to be created further
+    # away from their parents, increasing exploration.
+    blend_alpha=0.75
 )
 
 # Pass the custom options to the solver
