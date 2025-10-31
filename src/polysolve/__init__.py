@@ -265,7 +265,9 @@ class Function:
         """
         self._check_initialized()
         if self._largest_exponent == 0:
-            raise ValueError("Cannot differentiate a constant (Function of degree 0).")
+            diff_func = Function(0)
+            diff_func.set_coeffs([0])
+            return diff_func
         
         derivative_coefficients = np.polyder(self.coefficients)
         
@@ -681,7 +683,7 @@ class Function:
     
     def _multiply_by_scalar(self, scalar: Union[int, float]) -> 'Function':
         """Helper method to multiply the function by a scalar constant."""
-        self._check_initialized() # It's good practice to check here too
+        self._check_initialized()
 
         if scalar == 0:
             result_func = Function(0)
