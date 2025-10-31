@@ -133,6 +133,15 @@ class GA_Options:
             raise ValueError(
                 f"blend_alpha cannot be negative, but got {self.blend_alpha}"
             )
+        if self.root_precision > 15:
+            warnings.warn(
+                f"root_precision={self.root_precision} is greater than 15. "
+                "This demands an accuracy that is likely impossible for standard "
+                "64-bit floats (float64), which are limited to 15-16 significant digits. "
+                "The solver may fail to find any roots.",
+                UserWarning,
+                stacklevel=2
+            )
 
 def _get_cauchy_bound(coeffs: np.ndarray) -> float:
     """
