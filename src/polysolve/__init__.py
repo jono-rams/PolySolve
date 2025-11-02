@@ -746,6 +746,21 @@ class Function:
             return NotImplemented
         
         return self
+    
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks if two Function objects are equal by comparing
+        their coefficients.
+        """
+        # Check if the 'other' object is even a Function
+        if not isinstance(other, Function):
+            return NotImplemented
+        
+        # Ensure both are initialized before trying to access .coefficients
+        if not self._initialized or not other._initialized:
+            return False
+
+        return np.array_equal(self.coefficients, other.coefficients)
 
 
     def quadratic_solve(self) -> Optional[List[float]]:
@@ -770,9 +785,35 @@ class Function:
             return None  # No real roots
 
         sqrt_discriminant = math.sqrt(discriminant)
-        root1 = (-b + sqrt_discriminant) / (2 * a)
-        root2 = (-b - sqrt_discriminant) / (2 * a)
+        
+        # 1. Calculate the first root.
+        # We use math.copysign(val, sign) to get the sign of b.
+        # This ensures (-b - sign*sqrt) is always an *addition*
+        # (or subtraction of a smaller from a larger number),
+        # avoiding catastrophic cancellation.
+        root1 = (-b - math.copysign(sqrt_discriminant, b)) / (2 * a)
 
+        # 2. Calculate the second root using Vieta's formulas.
+        # We know that root1 * root2 = c / a.
+        # This is just a division, which is numerically stable.
+
+        # Handle the edge case where c=0.
+        # If c=0, then root1 is 0.0, and root2 is -b/a
+        # We can't divide by root1=0, so we check.
+        if root1 == 0.0:
+            # If c is also 0, the other root is -b/a
+            if c == 0.0: 
+                root2 = -b / a
+            else:
+                # This case (root1=0 but c!=0) shouldn't happen
+                # with real numbers, but it's safe to just
+                # return the one root we found.
+                return [0.0] 
+        else:
+            # Standard case: Use Vieta's formula
+            root2 = (c / a) / root1
+
+        # Return roots in a consistent order
         return [root1, root2]
 
 # Example Usage

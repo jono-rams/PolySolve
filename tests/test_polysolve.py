@@ -37,6 +37,12 @@ def m_func_2() -> Function:
     f.set_coeffs([5, -4])
     return f
 
+@pytest.fixture
+def base_func():
+    f = Function(2)
+    f.set_coeffs([1, 2, 3])
+    return f
+
 # --- Core Functionality Tests ---
 
 def test_solve_y(quadratic_func):
@@ -94,6 +100,32 @@ def test_function_multiplication(m_func_1, m_func_2):
     result = m_func_1 * m_func_2
     assert result.largest_exponent == 3
     assert np.array_equal(result.coefficients, [10, 7, -7, -4])
+
+def test_equality(base_func):
+    """Tests the __eq__ method for the Function class."""
+    
+    # 1. Test for equality with a new, identical object
+    f_identical = Function(2)
+    f_identical.set_coeffs([1, 2, 3])
+    assert base_func == f_identical
+
+    # 2. Test for inequality (different coefficients)
+    f_different = Function(2)
+    f_different.set_coeffs([1, 9, 3])
+    assert base_func != f_different
+
+    # 3. Test for inequality (different degree)
+    f_diff_degree = Function(1)
+    f_diff_degree.set_coeffs([1, 2])
+    assert base_func != f_diff_degree
+
+    # 4. Test against a different type
+    assert base_func != "some_string"
+    assert base_func != 123
+
+    # 5. Test against an uninitialized Function
+    f_uninitialized = Function(2)
+    assert base_func != f_uninitialized
 
 # --- Genetic Algorithm Root-Finding Tests ---
 
