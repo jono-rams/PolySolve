@@ -70,9 +70,9 @@ class GA_Options:
 
     Attributes:
         min_range (float): The minimum value for the initial random solutions.
-                           Default: -100.0
+                           Default: 0.0
         max_range (float): The maximum value for the initial random solutions.
-                           Default: 100.0
+                           Default: 0.0
         num_of_generations (int): The number of iterations the algorithm will run.
                                   Default: 10
         data_size (int): The total number of solutions (population size)
@@ -104,8 +104,8 @@ class GA_Options:
                               (e.g., 7) is more precise but may return
                               multiple near-identical roots. Default: 5
     """
-    min_range: float = -100.0
-    max_range: float = 100.0
+    min_range: float = 0.0
+    max_range: float = 0.0
     num_of_generations: int = 10
     data_size: int = 100000
     mutation_strength: float = 0.01
@@ -360,7 +360,7 @@ class Function:
         random_size = data_size - elite_size - crossover_size - mutation_size
 
         # Check if the user is using the default, non-expert range
-        user_range_is_default = (options.min_range == -100.0 and options.max_range == 100.0)
+        user_range_is_default = (options.min_range == 0.0 and options.max_range == 0.0)
 
         if user_range_is_default:
             # User hasn't specified a custom range.
@@ -489,7 +489,7 @@ class Function:
         d_coefficients = cupy.array(self.coefficients, dtype=cupy.float64)
         
         # Check if the user is using the default, non-expert range
-        user_range_is_default = (options.min_range == -100.0 and options.max_range == 100.0)
+        user_range_is_default = (options.min_range == 0.0 and options.max_range == 0.0)
 
         if user_range_is_default:
             # User hasn't specified a custom range.
