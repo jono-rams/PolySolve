@@ -12,6 +12,7 @@ A Python library for representing, manipulating, and solving polynomial equation
 ## Key Features
 
 * **Numerically Stable Solver**: Makes complex calculations **practical**. Leverage your GPU to power the robust genetic algorithm, solving high-degree polynomials accurately in a reasonable timeframe.
+* **Complex Number Support**: Fully supports complex coefficients and finding roots in the complex plane (e.g., $x^2 + 1 = 0 \to \pm i$).
 * **Numba Accelerated CPU Solver**: The default genetic algorithm is JIT-compiled with Numba for high-speed CPU performance, right out of the box.
 * **CUDA Accelerated**: Leverage NVIDIA GPUs for a massive performance boost when finding roots in large solution spaces.
 * **Create and Manipulate Polynomials**: Easily define polynomials of any degree using integer or float coefficients, and perform arithmetic operations like addition, subtraction, multiplication, and scaling.
@@ -75,12 +76,19 @@ roots_analytic = f1.quadratic_solve()
 print(f"Analytic roots: {sorted(roots_analytic)}")
 # > Analytic roots: [-1.0, 2.5]
 
-# 6. Find roots with the genetic algorithm (Numba CPU)
-#    This is the default, JIT-compiled CPU solver.
+# 6. Find REAL roots with the genetic algorithm (Numba CPU)
+#    This is the default, JIT-compiled CPU solver.
 ga_opts = GA_Options(num_of_generations=20)
 roots_ga = f1.get_real_roots(ga_opts, use_cuda=False)
-print(f"Approximate roots from GA: {roots_ga[:2]}")
-# > Approximate roots from GA: [-1.000..., 2.500...]
+print(f"Approximate real roots: {roots_ga[:2]}")
+# > Approximate real roots: [-1.000..., 2.500...]
+
+# 7. Find ALL roots (Real + Complex)
+#    Use get_roots() to search the complex plane.
+f_complex = Function(2, [1, 0, 1]) # x^2 + 1
+roots_all = f_complex.get_roots(ga_opts)
+print(f"Approximate complex roots: {roots_all}")
+# > Approximate complex roots: [-1.00...j, 1.00...j]
 
 # If you installed a CUDA extra, you can run it on the GPU:
 # roots_ga_gpu = f1.get_real_roots(ga_opts, use_cuda=True)
@@ -114,7 +122,10 @@ ga_robust_search = GA_Options(
     # Increase the crossover blend factor to 0.75.
     # This allows new solutions to be created further
     # away from their parents, increasing exploration.
-    blend_alpha=0.75
+    blend_alpha=0.75,
+
+    # Enable complex root finding (default is True)
+    find_complex=True
 )
 
 # Pass the custom options to the solver

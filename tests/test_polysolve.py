@@ -43,6 +43,11 @@ def base_func():
     f.set_coeffs([1, 2, 3])
     return f
 
+@pytest.fixture
+def complex_func():
+    f = Function(2, [1, 2, 2])
+    return f
+
 # --- Core Functionality Tests ---
 
 def test_solve_y(quadratic_func):
@@ -158,6 +163,39 @@ def test_get_real_roots_cuda(quadratic_func):
     roots = quadratic_func.get_real_roots(ga_opts, use_cuda=True)
     
     expected_roots = np.array([-1.0, 2.5])
+    
+    # Verify that the CUDA implementation also finds the correct roots within tolerance.
+    npt.assert_allclose(np.sort(roots), np.sort(expected_roots), atol=1e-2)
+
+def test_get_roots_numpy(complex_func):
+    """
+    Tests that the NumPy-based genetic algorithm approximates the roots correctly.
+    """
+    # Using more generations for higher accuracy in testing
+    ga_opts = GA_Options(num_of_generations=50, data_size=200000, selection_percentile=0.66, root_precision=3)
+    
+    roots = complex_func.get_roots(ga_opts, use_cuda=False)
+    
+    # Check if the algorithm found values close to the two known roots.
+    # We don't know which order they'll be in, so we check for presence.
+    expected_roots = np.array([-1.0-1.j, -1.0+1.j])
+    
+    npt.assert_allclose(np.sort(roots), np.sort(expected_roots), atol=1e-2)
+
+
+@pytest.mark.skipif(not _CUPY_AVAILABLE, reason="CuPy is not installed, skipping CUDA test.")
+def test_get_roots_cuda(complex_func):
+    """
+    Tests that the CUDA-based genetic algorithm approximates the roots correctly.
+    This test implicitly verifies that the CUDA kernel is functioning.
+    It will be skipped automatically if CuPy is not available.
+    """
+    
+    ga_opts = GA_Options(num_of_generations=50, data_size=200000, selection_percentile=0.66, root_precision=3)
+    
+    roots = complex_func.get_roots(ga_opts, use_cuda=True)
+    
+    expected_roots = np.array([-1.0-1.j, -1+1.j])
     
     # Verify that the CUDA implementation also finds the correct roots within tolerance.
     npt.assert_allclose(np.sort(roots), np.sort(expected_roots), atol=1e-2)
