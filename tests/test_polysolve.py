@@ -19,6 +19,13 @@ def quadratic_func() -> Function:
     return f
 
 @pytest.fixture
+def int_func() -> Function:
+    """Provides a function for easy integral calculation."""
+    f = Function(largest_exponent=2)
+    f.set_coeffs([3, -4, -5])
+    return f
+
+@pytest.fixture
 def linear_func() -> Function:
     """Provides a standard linear function: x + 10."""
     f = Function(largest_exponent=1)
@@ -69,6 +76,20 @@ def test_nth_derivative(quadratic_func):
     assert derivative.largest_exponent == 0
     # The derivative of 2x^2 - 3x - 5 is 4x - 3
     assert np.array_equal(derivative.coefficients, [4])
+
+def test_integral(int_func):
+    """Tests the calculation of the function's integral."""
+    integral = int_func.integral()
+    assert integral.largest_exponent == 3
+    # The integral of 2x^2 -3x - 5 is x^3 - 2x^2 - 5x
+    assert np.array_equal(integral.coefficients, [1, -2, -5, 0])
+
+def test_integral_custom_constant(int_func):
+    """Tests the calculation of the function's integral with custom constant of integration."""
+    integral = int_func.integral(constant_of_integration=42)
+    assert integral.largest_exponent == 3
+    # The integral of 2x^2 -3x - 5 is x^3 - 2x^2 - 5x
+    assert np.array_equal(integral.coefficients, [1, -2, -5, 42])
 
 def test_quadratic_solve(quadratic_func):
     """Tests the analytical quadratic solver for exact roots."""

@@ -51,6 +51,8 @@ from polysolve import Function, GA_Options
 #    Coefficients can be integers or floats.
 f1 = Function(largest_exponent=2)
 f1.set_coeffs([2, -3, -5])
+f2 = Function(largest_exponent=2)
+f2.set_coeffs([3, -4, -5])
 
 print(f"Function f1: {f1}")
 # > Function f1: 2x^2 - 3x - 5
@@ -70,20 +72,30 @@ ddf1 = f1.nth_derivative(2)
 print(f"2nd Derivative of f1: {ddf1}")
 # > Derivative of f1: 4
 
-# 5. Find roots analytically using the quadratic formula
+# 5. Find the integral: x^3 - 2x^2 - 5x + 0
+igl = f2.integral()
+print(f"Integral of f2: {igl}")
+# > integral of f2: x^3 - 2x^2 - 5x + 0
+
+# 6. Find the integral with custom constant of integration: x^3 - 2x^2 - 5x + 2
+igl = f2.integral(constant_of_integration=2)
+print(f"Integral of f2: {igl}")
+# > integral of f2: x^3 - 2x^2 - 5x + 2
+
+# 7. Find roots analytically using the quadratic formula
 #    This is exact and fast for degree-2 polynomials.
 roots_analytic = f1.quadratic_solve()
 print(f"Analytic roots: {sorted(roots_analytic)}")
 # > Analytic roots: [-1.0, 2.5]
 
-# 6. Find REAL roots with the genetic algorithm (Numba CPU)
+# 8. Find REAL roots with the genetic algorithm (Numba CPU)
 #    This is the default, JIT-compiled CPU solver.
 ga_opts = GA_Options(num_of_generations=20)
 roots_ga = f1.get_real_roots(ga_opts, use_cuda=False)
 print(f"Approximate real roots: {roots_ga[:2]}")
 # > Approximate real roots: [-1.000..., 2.500...]
 
-# 7. Find ALL roots (Real + Complex)
+# 9. Find ALL roots (Real + Complex)
 #    Use get_roots() to search the complex plane.
 f_complex = Function(2, [1, 0, 1]) # x^2 + 1
 roots_all = f_complex.get_roots(ga_opts)
