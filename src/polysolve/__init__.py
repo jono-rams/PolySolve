@@ -1,6 +1,7 @@
 import math
 import cmath
 import numpy as np
+from numpy.polynomial import Polynomial
 import numba
 from dataclasses import dataclass
 from typing import List, Optional, Union
@@ -383,6 +384,9 @@ class Function:
             largest_exponent (int): The largest exponent (n) in the function.
         """
         self._largest_exponent = largest_exponent
+        self.poly_obj = None
+        self._initialized = False
+
         if coefficients is not None:
             self.set_coeffs(coefficients)
             # Verify user provided exponent matches if they provided both
@@ -390,7 +394,6 @@ class Function:
                 raise ValueError("Provided largest_exponent does not match coefficient list length.")
         elif largest_exponent is not None:
             self.coefficients = None
-            self._initialized = False
         else:
             raise ValueError("Must provide either coefficients or largest_exponent.")
 
@@ -425,6 +428,9 @@ class Function:
             target_dtype = np.float64
 
         self.coefficients = np.array(coefficients, dtype=target_dtype)
+        reversed_coeffs = coefficients[::-1]
+        self.poly_obj = Polynomial(reversed_coeffs)
+
         self._largest_exponent = len(coefficients) - 1
         self._initialized = True
 
@@ -454,7 +460,7 @@ class Function:
             float: The resulting y-value.
         """
         self._check_initialized()
-        return np.polyval(self.coefficients, x_val)
+        return self.poly_obj(x_val)
 
     def differential(self) -> 'Function':
         """
@@ -489,10 +495,11 @@ class Function:
             diff_func.set_coeffs([0])
             return diff_func
         
-        derivative_coefficients = np.polyder(self.coefficients)
+        deriv_poly = self.poly_obj.deriv(1)
+        new_coeffs = deriv_poly.coef[::-1].tolist()
         
         diff_func = Function(self._largest_exponent - 1)
-        diff_func.set_coeffs(derivative_coefficients.tolist())
+        diff_func.set_coeffs(new_coeffs)
         return diff_func
     
 
@@ -512,18 +519,30 @@ class Function:
             raise ValueError("Derivative order 'n' must be a positive integer.")
 
         if n > self.largest_exponent:
-            function = Function(0)
-            function.set_coeffs([0])
-            return function
+            diff_func = Function(0)
+            diff_func.set_coeffs([0])
+            return diff_func
 
-        if n == 1:
-            return self.derivative()
+        deriv_poly = self.poly_obj.deriv(n)
+        new_coeffs = deriv_poly.coef[::-1].tolist()
         
-        function = self
-        for _ in range(n):
-            function = function.derivative()
+        new_degree = self._largest_exponent - n
+        diff_func = Function(new_degree)
+        diff_func.set_coeffs(new_coeffs)
+        return diff_func
 
-        return function
+
+    def integral(self, constant_of_integration: float = 0.0) -> 'Function':
+        """Calculates the indefinite integral (antiderivative)."""
+        self._check_initialized()
+    
+        # Integration naturally increases the degree by 1
+        integ_poly = self.poly_obj.integ(m=1, k=[constant_of_integration])
+        new_coeffs = integ_poly.coef[::-1].tolist()
+    
+        integral_func = Function(self._largest_exponent + 1)
+        integral_func.set_coeffs(new_coeffs)
+        return integral_func
 
 
     def get_real_roots(self, options: Optional[GA_Options] = None, use_cuda: bool = False) -> np.ndarray:
@@ -1139,49 +1158,10 @@ class Function:
 
     def __str__(self) -> str:
         """Returns a human-readable string representation of the function."""
-        self._check_initialized()
-        parts = []
-        for i, c in enumerate(self.coefficients):
-            if c == 0:
-                continue
+        if not self._initialized:
+            return "Uninitialized Function"
 
-            power = self._largest_exponent - i
-            
-            # Coefficient part
-            coeff_val = c
-            if c == int(c):
-                coeff_val = int(c)
-
-            if coeff_val == 1 and power != 0:
-                coeff = ""
-            elif coeff_val == -1 and power != 0:
-                coeff = "-"
-            else:
-                coeff = str(coeff_val)
-
-            # Variable part
-            if power == 0:
-                var = ""
-            elif power == 1:
-                var = "x"
-            else:
-                var = f"x^{power}"
-
-            # Add sign for non-leading terms
-            sign = ""
-            if i > 0:
-                sign = " + " if c > 0 else " - "
-                coeff = str(abs(coeff_val))
-                if abs(c) == 1 and power != 0:
-                    coeff = "" # Don't show 1 for non-constant terms
-
-            parts.append(f"{sign}{coeff}{var}")
-        
-        # Join parts and clean up
-        result = "".join(parts)
-        if result.startswith(" + "):
-            result = result[3:]
-        return result if result else "0"
+        return str(self.poly_obj)
 
     def __repr__(self) -> str:
         return f"Function(str='{self}')"
@@ -1191,11 +1171,12 @@ class Function:
         self._check_initialized()
         other._check_initialized()
 
-        new_coefficients = np.polyadd(self.coefficients, other.coefficients)
-        new_coefficients = self._strip_leading_zeros(new_coefficients)
+        # The Polynomial objects handle degree alignment and zero-trimming natively
+        new_poly = self.poly_obj + other.poly_obj
+        new_coeffs = new_poly.coef[::-1].tolist()
         
-        result_func = Function(len(new_coefficients) - 1)
-        result_func.set_coeffs(new_coefficients.tolist())
+        result_func = Function(len(new_coeffs) - 1)
+        result_func.set_coeffs(new_coeffs)
         return result_func
     
     def _strip_leading_zeros(self, coeffs: np.ndarray) -> np.ndarray:
@@ -1209,11 +1190,11 @@ class Function:
         self._check_initialized()
         other._check_initialized()
 
-        new_coefficients = np.polysub(self.coefficients, other.coefficients)
-        new_coefficients = self._strip_leading_zeros(new_coefficients)
+        new_poly = self.poly_obj - other.poly_obj
+        new_coeffs = new_poly.coef[::-1].tolist()
         
-        result_func = Function(len(new_coefficients) - 1)
-        result_func.set_coeffs(new_coefficients.tolist())
+        result_func = Function(len(new_coeffs) - 1)
+        result_func.set_coeffs(new_coeffs)
         return result_func
     
     def _multiply_by_scalar(self, scalar: Union[int, float, complex]) -> 'Function':
@@ -1237,15 +1218,11 @@ class Function:
         self._check_initialized()
         other._check_initialized()
 
-        # np.polymul performs convolution of coefficients to multiply polynomials
-        new_coefficients = np.polymul(self.coefficients, other.coefficients)
-        new_coefficients = self._strip_leading_zeros(new_coefficients)
+        new_poly = self.poly_obj * other.poly_obj
+        new_coeffs = new_poly.coef[::-1].tolist()
     
-        # The degree of the resulting polynomial is derived from the new coefficients
-        new_degree = len(new_coefficients) - 1
-    
-        result_func = Function(new_degree)
-        result_func.set_coeffs(new_coefficients.tolist())
+        result_func = Function(len(new_coeffs) - 1)
+        result_func.set_coeffs(new_coeffs)
         return result_func
         
     def __mul__(self, other: Union['Function', int, float, complex]) -> 'Function':
@@ -1269,16 +1246,18 @@ class Function:
     
         if isinstance(other, (int, float, complex)):
             if other == 0:
-                self.coefficients = np.array([0], dtype=self.coefficients.dtype)
-                self._largest_exponent = 0
+                self.set_coeffs([0])
             else:
-                self.coefficients *= other
+                # Update the underlying poly_obj, then sync the legacy array
+                self.poly_obj *= other
+                self.coefficients = self.poly_obj.coef[::-1]
+                self._largest_exponent = len(self.coefficients) - 1
             
         elif isinstance(other, self.__class__):
             other._check_initialized()
-            self.coefficients = np.polymul(self.coefficients, other.coefficients)
+            self.poly_obj *= other.poly_obj
+            self.coefficients = self.poly_obj.coef[::-1]
             self._largest_exponent = len(self.coefficients) - 1
-        
         else:
             return NotImplemented
         
@@ -1289,20 +1268,20 @@ class Function:
         Checks if two Function objects are equal by comparing
         their coefficients.
         """
-        # Check if the 'other' object is even a Function
         if not isinstance(other, Function):
             return NotImplemented
         
-        # Ensure both are initialized before trying to access .coefficients
         if not self._initialized or not other._initialized:
             return False
 
-        c1 = self._strip_leading_zeros(self.coefficients)
-        c2 = self._strip_leading_zeros(other.coefficients)
+        # Extract the auto-trimmed arrays from the modern API
+        c1 = self.poly_obj.coef
+        c2 = other.poly_obj.coef
         
         if c1.shape != c2.shape:
             return False
             
+        # Retain np.allclose to protect against floating-point inaccuracies
         return np.allclose(c1, c2)
 
 
@@ -1320,10 +1299,9 @@ class Function:
         a, b, c = self.coefficients
 
         discriminant = (b**2) - (4*a*c)
-
         sqrt_discriminant = cmath.sqrt(discriminant)
 
-        if b >= 0:
+        if b.real >= 0:
             sign_b = 1
         else:
             sign_b = -1
