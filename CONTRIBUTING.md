@@ -81,7 +81,7 @@ You can replicate our CI environment exactly to minimize "it works on my machine
 * **CUDA Toolkit:** 12.5.1
 * **Base Docker Image:** `nvidia/cuda:12.5.1-devel-ubuntu24.04`
 * **Node.js Version:** 20.x
-* **Python Versions Tested:** 3.8, 3.10, 3.12
+* **Python Versions Tested:** 3.8, 3.10, 3.12, 3.14
 * **CI Docker Image:** You can pull the exact image used by our runners from Docker Hub:
 
 ```bash
