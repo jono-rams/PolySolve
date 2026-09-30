@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # --- Core Metadata ---
 name = "polysolve"
-version = "0.8.0"
+version = "0.8.1"
 authors = [
   { name="Jonathan Rampersad", email="jonathan@jono-rams.work" },
 ]
@@ -39,7 +39,7 @@ dependencies = [
 
 # --- Optional Dependencies (Extras) ---
 [project.optional-dependencies]
-cuda12 = ["cupy-cuda12x"]
+cuda12 = ["cupy-cuda12x[ctk]"]
 dev = ["pytest"]
 
 [project.urls]
